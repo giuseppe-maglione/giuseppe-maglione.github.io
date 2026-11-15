@@ -56,28 +56,23 @@ hr {
   border-bottom: 1px dashed #ff2a2a !important;
 }
 
-#main_content ul li::before,
-#main_content ol li::before,
-.container ul li::before,
+ul {
+  list-style: none !important;
+  padding-left: 0 !important;
+}
+
+ul li {
+  list-style-image: none !important; // disattiva il bullet.png verde del tema
+  position: relative;
+  padding-left: 1.6em;
+  margin-bottom: 6px;
+}
+
 ul li::before {
+  content: ">>";
+  position: absolute;
+  left: 0;
   color: #ff2a2a !important;
-}
-
-a.social-btn {
-  display: inline-block;
-  padding: 8px 16px;
-  margin-right: 10px;
-  margin-bottom: 10px;
-  color: #000000 !important;
-  background-color: #ff2a2a !important;
-  border: 1px solid #ff2a2a !important;
-  text-decoration: none !important;
   font-weight: bold;
-  font-size: 0.9em;
-  transition: all 0.3s ease;
-}
-
-a.social-btn:hover {
-  background-color: #000000 !important;
-  color: #ff2a2a !important;
+  font-family: monospace;
 }

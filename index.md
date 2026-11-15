@@ -14,6 +14,17 @@ Welcome. I am an Offensive Security researcher. This space is dedicated to docum
 
 ---
 
+### Recent Publications
+<ul>
+  {% for post in site.posts %}
+    <li>
+      <a href="{{ post.url }}">{{ post.title }}</a> - {{ post.date | date: "%Y-%m-%d" }}
+    </li>
+  {% endfor %}
+</ul>
+
+---
+
 ### Connect
 
 If you want to collaborate, discuss vulnerabilities, or just check out my other work, feel free to reach out:
@@ -23,14 +34,3 @@ If you want to collaborate, discuss vulnerabilities, or just check out my other 
   <a href="https://tryhackme.com/p/giuu" target="_blank" class="social-btn">TryHackMe</a>
   <a href="https://www.linkedin.com/in/giuseppe-maglione-48748a23b/" target="_blank" class="social-btn">LinkedIn</a>
 </div>
-
----
-
-### Recent Publications
-<ul>
-  {% for post in site.posts %}
-    <li>
-      <a href="{{ post.url }}">{{ post.title }}</a> - {{ post.date | date: "%Y-%m-%d" }}
-    </li>
-  {% endfor %}
-</ul>
