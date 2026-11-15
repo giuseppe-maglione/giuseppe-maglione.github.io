@@ -56,10 +56,10 @@ hr {
   border-bottom: 1px dashed #ff2a2a !important;
 }
 
-body ul li::before,
-body ol li::before,
-#main-content ul li::before,
-#main-content ol li::before {
+#main_content ul li::before,
+#main_content ol li::before,
+.container ul li::before,
+ul li::before {
   color: #ff2a2a !important;
 }
 
