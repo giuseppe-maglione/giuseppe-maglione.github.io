@@ -1,0 +1,8 @@
+title: "giuu - Offensive Security Blog"
+author: "Giuseppe Maglione"
+description: "Collection of CTF writeups, CVE analysis and other offensive security stuff."
+theme: jekyll-theme-hacker
+
+permalink: /:categories/:year/:month/:day/:title/
+markdown: kramdown
+highlighter: rouge
