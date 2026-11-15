@@ -14,7 +14,7 @@ Welcome. I am an Offensive Security researcher. This space is dedicated to docum
 
 ---
 
-### Recent Publications
+### Recent Publications 📝
 <ul>
   {% for post in site.posts %}
     <li>
@@ -25,7 +25,7 @@ Welcome. I am an Offensive Security researcher. This space is dedicated to docum
 
 ---
 
-### Connect
+### Connect 👥
 
 If you want to collaborate, discuss vulnerabilities, or just check out my other work, feel free to reach out:
 
