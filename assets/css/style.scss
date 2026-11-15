@@ -1,0 +1,42 @@
+---
+---
+@import "{{ site.theme }}";
+
+body {
+  background-color: #000000;
+  color: #e4e4e4;
+}
+
+a {
+  color: #ff2a2a;
+}
+a:hover {
+  color: #cc0000;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: #ffffff;
+}
+
+header h1 {
+  color: #ff2a2a;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+pre, code {
+  background-color: #0a0a0a;
+  border: 1px solid #222222;
+  border-left: 3px solid #ff2a2a;
+  color: #d1d1d1;
+}
+
+p code, li code, table code {
+  color: #ff2a2a;
+  background-color: #111111;
+  border: none;
+}
+
+hr {
+  border-bottom: 1px solid #ff2a2a;
+}
