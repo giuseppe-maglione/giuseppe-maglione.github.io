@@ -55,3 +55,21 @@ table th, table td {
 hr {
   border-bottom: 1px dashed #ff2a2a !important;
 }
+
+ul li::before, ol li::before {
+  color: #ff2a2a !important;
+}
+
+a.button {
+  color: #ffffff !important;
+  background-color: #0a0a0a !important;
+  border: 1px solid #ff2a2a !important;
+  border-radius: 0px !important;
+  transition: all 0.3s ease;
+}
+
+a.button:hover {
+  background-color: #ff2a2a !important;
+  color: #000000 !important;
+  border: 1px solid #ff2a2a !important;
+}
