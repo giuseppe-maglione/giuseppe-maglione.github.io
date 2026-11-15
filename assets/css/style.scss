@@ -3,40 +3,55 @@
 @import "{{ site.theme }}";
 
 body {
-  background-color: #000000;
-  color: #e4e4e4;
+  background-color: #000000 !important;
+  color: #e4e4e4 !important;
+}
+
+header {
+  border-bottom: 1px dashed #ff2a2a !important;
+}
+footer {
+  border-top: 1px dashed #ff2a2a !important;
 }
 
 a {
-  color: #ff2a2a;
+  color: #ff2a2a !important;
 }
 a:hover {
-  color: #cc0000;
+  color: #cc0000 !important;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  color: #ffffff;
+  color: #ffffff !important;
 }
 
 header h1 {
-  color: #ff2a2a;
+  color: #ff2a2a !important;
   font-weight: bold;
-  letter-spacing: 1px;
 }
 
-pre, code {
-  background-color: #0a0a0a;
-  border: 1px solid #222222;
-  border-left: 3px solid #ff2a2a;
-  color: #d1d1d1;
+blockquote {
+  color: #b0b0b0 !important;
+  border-left: 2px solid #ff2a2a !important;
+}
+
+pre, pre code {
+  background-color: #0a0a0a !important;
+  border: 1px solid #1a1a1a !important;
+  border-left: 3px solid #ff2a2a !important;
+  color: #d1d1d1 !important;
 }
 
 p code, li code, table code {
-  color: #ff2a2a;
-  background-color: #111111;
-  border: none;
+  color: #ff2a2a !important;
+  background-color: #111111 !important;
+  border: 1px solid #222222 !important;
+}
+
+table th, table td {
+  border: 1px solid #333333 !important;
 }
 
 hr {
-  border-bottom: 1px solid #ff2a2a;
+  border-bottom: 1px dashed #ff2a2a !important;
 }
