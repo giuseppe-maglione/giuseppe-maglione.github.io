@@ -8,7 +8,7 @@ tags: [source_code, asterisk, crontab]
 
 # Aster (Medium) - TryHackMe Walkthrough
 
-Aster is a medium room available on [TryHackMe](https://tryhackme.com/room/aster). The machine requires a basic understanding of source code inspection (Python and Java), Asterisk enumeration and Crontab.
+Aster is a medium difficulty room available on [TryHackMe](https://tryhackme.com/room/aster). The machine requires a basic understanding of source code inspection (Python and Java), Asterisk enumeration and Crontab.
 
 # Enumeration
 
@@ -88,7 +88,7 @@ The message reveals that user `admin` exists on the “open source framework for
 
 ## Asterisk (5038)
 
-The previous finding is confirmed by trying a basic connection to the 5038 port. Unlucky, there are no available exploits for the asterisk’s version running on the target server. 
+The previous finding is confirmed by trying a basic connection to the 5038 port. Unlucky, there are no available exploits for the Asterisk’s version running on the target server. 
 
 ```
 ┌──(giu㉿kali)-[~/Downloads/machine]
@@ -104,7 +104,7 @@ Shellcodes: No Results
 
 # Exploitation
 
-Because of the `admin` hint found in the previous message, it makes sense to try a password bruteforce on asterisk.
+Because of the `admin` hint found in the previous message, it makes sense to try a password bruteforce on Asterisk.
 
 Using `rockyou.txt` as wordlist, we are able to get a pair of valid credentials. We can now login as user `admin`.
 
@@ -121,7 +121,7 @@ Hydra (https://github.com/vanhauser-thc/thc-hydra) starting at 2026-11-16 11:36:
 Hydra (https://github.com/vanhauser-thc/thc-hydra) finished at 2026-11-16 11:36:06
 ```
 
-For reference, I am using the following [online guide](https://asteriskrecipes.com/reference/cli-commands/cli-commands-quick-reference) for basic asterisks commands (make sure to press 2 times enter after each input 🙂).
+For reference, I am using the following [online guide](https://asteriskrecipes.com/reference/cli-commands/cli-commands-quick-reference) for basic Asterisks commands (make sure to press 2 times enter after each input 🙂).
 
 ```
 ┌──(giu㉿kali)-[~/Downloads/machine]
