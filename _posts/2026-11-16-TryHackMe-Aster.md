@@ -64,7 +64,7 @@ PORT     STATE SERVICE     REASON         VERSION
 
 There is an open http port, so it makes sense to start the enumeration from there.
 
-![image.png](/assets/images/thm-vulnversity/image.png)
+![image.png](/assets/images/th-aster/image.png)
 
 After clicking on the download button, a `.pyc` file can be retrieved from server. Using `file` utility, we can see that it is a byte-compiled Python file.
 
@@ -76,15 +76,15 @@ output.pyc: python 2.7 byte-compiled
 
 The most obvious thing we can do, is try to reverse it. With an [online pyc decompiler](https://www.decompiler.com/python), we are able to see the Python source code. 
 
-![image.png](/assets/images/thm-vulnversity/image%201.png)
+![image.png](/assets/images/th-aster/image%201.png)
 
 The variable `oO00oOo` contains a suspicious hex string, which once translated reveals an hidden message.
 
-![image.png](/assets/images/thm-vulnversity/image%202.png)
+![image.png](/assets/images/th-aster/image%202.png)
 
 The message reveals that user `admin` exists on the “open source framework for building communications”, so it is surely referring to asterisk.
 
-![image.png](/assets/images/thm-vulnversity/image%203.png)
+![image.png](/assets/images/th-aster/image%203.png)
 
 ## Asterisk (5038)
 
@@ -262,7 +262,7 @@ Archive:  Example_Root.jar
 
 Using again the same online decompiler, we are able to inspect the Java source code.
 
-![image.png](/assets/images/thm-vulnversity/image%204.png)
+![image.png](/assets/images/th-aster/image%204.png)
 
 As we can see, the code checks if file `/tmp/flag.dat` exists, and then writes a secret message in `/home/harry/root.txt`. It is very likely, given the filename (`Example_Root.class`), that this code contains the logic of the `run.sh` script contained in the `crontab` file. Let’s try to create the `/tmp/flag.dat` file and see if the script writes the root flag inside `root.txt`.
 
