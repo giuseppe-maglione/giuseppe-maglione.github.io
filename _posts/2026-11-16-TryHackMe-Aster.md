@@ -6,7 +6,7 @@ categories: [CTF, TryHackMe]
 tags: [source_code, asterisk, crontab]
 ---
 
-# Aster (Medium) - TryHackMe Walkthrough
+# Aster (Medium) - TryHackMe Writeup
 
 Aster is a medium difficulty room available on [TryHackMe](https://tryhackme.com/room/aster). The machine requires a basic understanding of source code inspection (Python and Java), Asterisk enumeration and Crontab.
 
