@@ -159,7 +159,7 @@ The results show what seems a valid pair of credentials.
 
 # Initial Access
 
-Trying to login via ssh as user `harry` with the found password get us into the machine.
+Trying to login via ssh as user `harry` with the found password gets us into the machine.
 
 ```
 ┌──(giu㉿kali)-[~/Downloads/machine]
@@ -238,7 +238,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 In this case, there is a suspicious crontab entry: `cd /root/java/ && bash run.sh` executed as `root` user. This could be a suitable privilege escalation vector.
 
-Remembering that in the user home directory there was a `.jar` file, i tried to extract it and see what’s inside.
+Remembering that in the user's home directory there was a `.jar` file, I tried to extract it and see what’s inside.
 
 ```
 ┌──(giu㉿kali)-[~/Downloads/machine]
@@ -264,13 +264,13 @@ Using again the same online decompiler, we are able to inspect the Java source c
 
 ![image.png](/assets/images/thm-aster/image%204.png)
 
-As we can see, the code checks if file `/tmp/flag.dat` exists, and then writes a secret message in `/home/harry/root.txt`. It is very likely, given the filename (`Example_Root.class`), that this code contains the logic of the `run.sh` script contained in the `crontab` file. Let’s try to create the `/tmp/flag.dat` file and see if the script writes the root flag inside `root.txt`.
+As we can see, the code checks if file `/tmp/flag.dat` exists, and then writes a secret message in `/home/harry/root.txt`. It is very likely, given the filename `Example_Root.class`, that this code contains the same logic as the `run.sh` script present in the `crontab` file. Let’s try to create the `/tmp/flag.dat` file and see if the script writes the root flag inside `root.txt`.
 
 ```
-harry@ubuntu:~$ touch /tmp/flag.dat
-harry@ubuntu:~$ cat /tmp/flag.dat 
 harry@ubuntu:~$ ls
 Example_Root.class  Example_Root.jar  META-INF  user.txt
+harry@ubuntu:~$ touch /tmp/flag.dat
+harry@ubuntu:~$ cat /tmp/flag.dat 
 harry@ubuntu:~$ ls
 Example_Root.class  Example_Root.jar  META-INF  root.txt  user.txt
 harry@ubuntu:~$ cat root.txt 
