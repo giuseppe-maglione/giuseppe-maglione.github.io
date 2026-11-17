@@ -112,7 +112,7 @@ As we can see from the assembly, the compare instruction is performed on `rda` a
 
 The plan is to set a breakpoint on the `cmp edx, eax` instruction and inspect the registers each time the breakpoint is reached. It is crucial that the loop does not break, which happens if the compare instruction fails, so every time that the breakpoint hits we have to force the two registers equals. 
 
-To proceed with the describe methodology, we have to set 2 breakpoints: 
+To proceed with the described methodology, we have to set 2 breakpoints: 
 
 1. The first to interrupt the execution before `ptrace` is called and jump to user input instruction 
 2. The second to inspect `rdx` value for the correct character and avoid performing the compare instruction on not equal registers (which would break the loop and exit the program)
@@ -148,9 +148,9 @@ Breakpoint 3, 0x000055555555521f in main ()
 ...
 ```
 
-In `gdb`, the first breakpoint (`0x0000555555555198`) hits at the instruction before `ptrace` is called, while the second one (`0x000055555555521f`) hits at every compare in the for loop. The jump command simply skip the `ptrace` control. 
+In `gdb`, the first breakpoint (`0x0000555555555198`) hits at the instruction before `ptrace` is called, while the second one (`0x000055555555521f`) hits at every compare in the for loop. The `jump` command simply skip the `ptrace` control. 
 
-As reported below, using `info registers` command before the `cmp` instruction reveals the character value used in the current loop iteration (i.e. the right character to use in the username string to pass the compare).
+As reported below, using `info registers` command before the `cmp` instruction reveals the character value used in the current loop iteration (i.e. the right character to use in the username string to pass the loop iteration).
 
 ```
 pwndbg> info registers
@@ -265,7 +265,7 @@ Type "help", "copyright", "credits" or "license" for more information.
 kym~humr
 ```
 
-Obviously, this is not the final username string, but the result of the calculations that the binary execute on the username string itself. Looking again at the assembly code, we can see that each character of the user input is xored with `0x04`, and value `0x08` is added to the result. This static operation can also be seen in the fact that we inserted the letter ‘`A`’ (`0x41` in hex) and `rax` always contained value `0x4d`. This means that the operations on the user input are hardcoded, and do not changed among loop interactions, which makes the reversing process easier. 
+Obviously, this is not the final username string, but the result of the calculations that the binary execute on the username string itself. Looking again at the assembly code, we can see that each character of the user input is xored with `0x04`, and value `0x08` is added to the result. This static operation can also be seen in the fact that we inserted the letter ‘`A`’ (`0x41` in hex) and `rax` always contained value `0x4d`. This means that the operations on the user input are hardcoded, and do not changed among loop iterations, which makes the reversing process easier. 
 
 To obtain the real username, we have to reverse the binary process, which leads to the final username string.
 
