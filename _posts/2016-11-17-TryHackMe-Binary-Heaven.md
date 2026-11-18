@@ -102,11 +102,13 @@ As we can see, the binary calls `ptrace` and checks if any debugger is attached 
 
 This type of control can be easily bypassed by setting a breakpoint right before `ptrace` call, jumping to the address where username is retrieved.
 
-Because username string is build runtime, the only thing we can do is execute step-by-step the `for` loop until it is finished and inspect the registers at each iteration for the correct characters.
+The decompiled section of code responsable of checking the username string is reported below.
 
 ![image.png](/assets/images/thm-binary-heaven/114db3c2-36eb-4494-a069-5456f8b7e4bb.png)
 
-As we can see from the assembly, the compare instruction is performed on `rda` and `rdx`, so those are the registers we have to deal with. In particular, we are interested in `rdx`, which will contain the username characters.
+Because username string is built runtime, the only thing we can do is execute step-by-step the `for` loop until it is finished and inspect the registers at each iteration to obtain the correct characters.
+
+As we can see from the assembly code in the image below, the compare instruction is performed on `rda` and `rdx`, so those are the registers we have to deal with. In particular, we are interested in `rdx`, which will contain the username characters.
 
 ![image.png](/assets/images/thm-binary-heaven/image%201.png)
 
@@ -150,7 +152,7 @@ Breakpoint 3, 0x000055555555521f in main ()
 
 In `gdb`, the first breakpoint (`0x0000555555555198`) hits at the instruction before `ptrace` is called, while the second one (`0x000055555555521f`) hits at every compare in the for loop. The `jump` command simply skip the `ptrace` control. 
 
-As reported below, using `info registers` command before the `cmp` instruction reveals the character value used in the current loop iteration (i.e. the right character to use in the username string to pass the loop iteration).
+As reported below, using `info registers` command before the `cmp` instruction reveals the character value used in the current loop iteration (i.e. the right character to use in the username string to pass the check).
 
 ```
 pwndbg> info registers
@@ -193,6 +195,8 @@ rbx            0x0                 0x0
 rcx            0x7ffff7f8f760      0x7ffff7f8f760
 rdx            0x6b                0x6b
 ...
+pwndbg> set $rax = $rdx
+pwndbg> continue
 
 pwndbg> info registers
 rax            0x4d                0x4d
@@ -200,6 +204,8 @@ rbx            0x0                 0x0
 rcx            0x7ffff7f8f760      0x7ffff7f8f760
 rdx            0x79                0x79
 ...
+pwndbg> set $rax = $rdx
+pwndbg> continue
 
 pwndbg> info registers
 rax            0x4d                0x4d
@@ -207,6 +213,8 @@ rbx            0x0                 0x0
 rcx            0x7ffff7f8f760      0x7ffff7f8f760
 rdx            0x6d                0x6d
 ...
+pwndbg> set $rax = $rdx
+pwndbg> continue
 
 pwndbg> info registers
 rax            0x4d                0x4d
@@ -214,6 +222,8 @@ rbx            0x0                 0x0
 rcx            0x7ffff7f8f760      0x7ffff7f8f760
 rdx            0x7e                0x7e
 ...
+pwndbg> set $rax = $rdx
+pwndbg> continue
 
 pwndbg> info registers
 rax            0x4d                0x4d
@@ -221,6 +231,8 @@ rbx            0x0                 0x0
 rcx            0x7ffff7f8f760      0x7ffff7f8f760
 rdx            0x68                0x68
 ...
+pwndbg> set $rax = $rdx
+pwndbg> continue
 
 pwndbg> info registers
 rax            0x4d                0x4d
@@ -228,6 +240,8 @@ rbx            0x0                 0x0
 rcx            0x7ffff7f8f760      0x7ffff7f8f760
 rdx            0x75                0x75
 ...
+pwndbg> set $rax = $rdx
+pwndbg> continue
 
 pwndbg> info registers
 rax            0x4d                0x4d
@@ -242,8 +256,9 @@ rbx            0x0                 0x0
 rcx            0x7ffff7f8f760      0x7ffff7f8f760
 rdx            0x72                0x72
 ...
-
+pwndbg> set $rax = $rdx
 pwndbg> continue
+
 Continuing.
 
 Correct! That is my name!                                                                                                                                                              
@@ -265,9 +280,9 @@ Type "help", "copyright", "credits" or "license" for more information.
 kym~humr
 ```
 
-Obviously, this is not the final username string, but the result of the calculations that the binary execute on the username string itself. Looking again at the assembly code, we can see that each character of the user input is xored with `0x04`, and value `0x08` is added to the result. This static operation can also be seen in the fact that we inserted the letter ‘`A`’ (`0x41` in hex) and `rax` always contained value `0x4d`. This means that the operations on the user input are hardcoded, and do not changed among loop iterations, which makes the reversing process easier. 
+Obviously, this is not the final username string, but the result of the calculations that the program executes on the username string itself. Looking again at the assembly code above, we can see that each character of the user input is xored with `0x04`, and value `0x08` is added to the result. This static operation can also be seen in the fact that when we inserted the letter ‘`A`’ (`0x41` in hex), `rax` always contained value `0x4d`. This means that the operations on the user input chars are hardcoded, and do not change among loop iterations, which makes the reversing process easier. 
 
-To obtain the real username, we have to reverse the binary process, which leads to the final username string.
+To obtain the real username, we have to reverse the binary process, subtracting `0x08` and xoring with `0x04`.
 
 ```
 ┌──(giu㉿kali)-[~/Downloads/machine/credentials_1614324056485]
@@ -309,11 +324,11 @@ Analyzing the program decompiled code, we can see that the function responsible 
 
 ![image.png](/assets/images/thm-binary-heaven/image%202.png)
 
-So, the code section we are interested in is the following.
+So, the assembly code section we are interested in is the following.
 
 ![image.png](/assets/images/thm-binary-heaven/image%203.png)
 
-As we can see, the `rax` register is loaded with the string `GOg0esGrrr!`, passed as argument to `runtime_memequal`. It is highly probable that this string is the password itself, so let’s give it a try.
+As we can see, the `rax` register is loaded with the string `GOg0esGrrr!`, passed as argument to `runtime_memequal`. It is highly probable that this string is the final password itself, because it is directly compared with user input without any transformation. So, let’s give it a try.
 
 ```
 ┌──(giu㉿kali)-[~/Downloads/machine/credentials_1614324056485]
@@ -325,7 +340,7 @@ GOg0esGrrr!
 Right password! Now GO ahead and SSH into heaven.
 ```
 
-Now that we have both username and password, we can proceed accessing the target machine and retrieving the first flag.
+Now that we have both username and password, we can proceed accessing the target machine via ssh and retrieving the first flag.
 
 ```
 guardian:GOg0esGrrr!
@@ -358,7 +373,7 @@ THM{REDACTED}
 
 # Return to the origins
 
-In the home directory of the compromised user, we can find a new binary with SUID. Gaining a shell inside the binary lead to a horizontal privilege escalation to the user `binexgod`
+In the home directory of the compromised user, we can find a new binary with SUID. Gaining a shell inside the binary lead to an horizontal privilege escalation to the user `binexgod`.
 
 ```
 guardian@heaven:~$ ls -la
@@ -378,7 +393,7 @@ drwxrwxr-x 2 guardian guardian  4096 Mar  4  2021 .nano
 -rw------- 1 guardian guardian   228 May  8  2021 .python_history
 ```
 
-In particular, we are dealing with a 32 bit ELF, compiled with some basic protections such as PIE and NX.
+In particular, we are dealing with a 32 bit ELF, compiled with some basic protections such as PIE and NX. I transferred the binary to my local Kali machine to analyze it more easily.
 
 ```
 ┌──(giu㉿kali)-[~/Downloads/machine]
@@ -419,7 +434,7 @@ System is at: 0xf7d4e000
 AAAAAAAAAAAAAAAAA
 ```
 
-Executing the binary again shows a different address, so ASLR is enabled, but with the same last 3 hex values of the previous execution. This is coherent with the 32 bit architecture, which handles memory locations in pages and not in byte.
+Executing the binary again shows a different address (because ASLR is enabled) but with the same last 3 hex values of the previous execution. This is coherent with the 32 bit architecture, which handles memory locations in pages and not in byte.
 
 ```
 ┌──(giu㉿kali)-[~/Downloads/machine]
@@ -429,13 +444,13 @@ System is at: 0xf7cec000
 AAAAAA
 ```
 
-With this forced page alignment, last 3 hex values of each address cannot change among different executions, even if ASLR is enabled.
+With a forced page alignment, last 3 hex values of each address cannot change among different executions, even when ASLR is enabled.
 
 Knowing `system` address, the most obvious attack we can think of a ret2libc. After analyzing the binary assembly code, we can spot an interesting function named `vuln`, invoked by `main`.
 
 ![image.png](/assets/images/thm-binary-heaven/image%204.png)
 
-The `vuln` function simply prints the hint message and retrieve user input with the insecure `gets` function, exploitable for the buffer overflow, which is saved in a variable called `s` long `0x20` bytes.
+The `vuln` function simply prints the hint message and retrieve user input with the insecure `gets` function, exploitable for the buffer overflow, which is saved in a variable `s` long `0x20-0x8` bytes.
 
 ![image.png](/assets/images/thm-binary-heaven/image%205.png)
 
@@ -444,7 +459,7 @@ This means that we can overflow the `s` variable and overwrite the return addres
 Two things are missing in order to complete this plan:
 
 1. Discover the address of `/bin/sh` string to pass to `system` function
-2. Understand how to pass parameters to a function on a x86 (32 bit) binary
+2. Understand how parameters are passed to a function in a x86 (32 bit) binary
 
 ## Calculate `libc` base address
 
@@ -510,7 +525,7 @@ str_bin_sh_address = libc_base_address + str_bin_sh_offset (0x15910b)
 
 ## Passing command parameter to `system`
 
-Using an [online guide](https://en.wikipedia.org/wiki/Calling_convention#x86_(32-bit)), it is possible to discover that on 32 bit binary the function calling convention states that parameters must be passed through stack.
+Using an [online guide](https://en.wikipedia.org/wiki/Calling_convention#x86_(32-bit)), it is possible to discover that on 32 bit binary the function calling convention states that parameters must be passed on stack.
 
 ![image.png](/assets/images/thm-binary-heaven/image%208.png)
 
@@ -655,7 +670,7 @@ $ ls -la /bin/bash
 -rwsr-sr-x 1 root root 1037528 Jul 12  2019 /bin/bash
 ```
 
-At this point, we can simply execute `/bin/bash` with `-p` parameter to not drop privileges
+At this point, we can simply execute `/bin/bash` with `-p` parameter to not drop privileges.
 
 ```
 $ /bin/bash -p
