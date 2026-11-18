@@ -12,7 +12,7 @@ Undiscovered is a medium room available on [TryHackMe](https://tryhackme.com/roo
 
 # Enumeration
 
-After adding `undiscovered.thm` to `/etc/hosts` file, as suggested from the room introduction, let’s proceed with a network ports scan.
+After adding `undiscovered.thm` to `/etc/hosts` file, as suggested from the room introduction, I proceed with a network ports scan.
 
 ```
 ┌──(giu㉿kali)-[~/Downloads/machine]
@@ -84,7 +84,7 @@ The most interesting open ports are surely http (80) and nfs (2049).
 
 The web server landing page shows what seems an hint message.
 
-![image.png](image.png)
+![image.png](/assets/images/thm-undiscovered/image.png)
 
 Trying a directory bruteforce lead to nothing, so I tried with a subdomain enumeration.
 
@@ -167,7 +167,7 @@ Following the previous message suggestion, I tried to visit the terminal subdoma
 
 After adding the subdomain to `/etc/hosts` file, a CMS appears on the landing page.
 
-![image.png](image%201.png)
+![image.png](/assets/images/thm-undiscovered/image%201.png)
 
 The CMS version is leaked, so I tried to see if there is any existing exploit for that version.
 
@@ -185,11 +185,11 @@ Shellcodes: No Results
 
 The exploit exists, but authentication is required. The exploit description says that the login page should be situated at `/cms`.
 
-![image.png](image%202.png)
+![image.png](/assets/images/thm-undiscovered/image%202.png)
 
 Unluckly, this subdomain hasn’t any `/cms` endpoint, so my intuition about “the darker path” was wrong. 
 
-![image.png](image%203.png)
+![image.png](/assets/images/thm-undiscovered/image%203.png)
 
 To avoid wasting time, I made a small Python script that tests each subdomain querying for `/cms` endpoint.
 
@@ -219,7 +219,7 @@ To avoid wasting time, I made a small Python script that tests each subdomain qu
 
 So I continued with deliver subdomain. The `/cms` endpoint of this subdomain effectively shows a login page.
 
-![image.png](image%204.png)
+![image.png](/assets/images/thm-undiscovered/image%204.png)
 
 Unluckily, the default `admin:admin` credentials suggested by the exploit does not work.
 
@@ -266,7 +266,7 @@ templates               [Status: 301, Size: 340, Words: 20, Lines: 10, Duration:
 
 The `/data` endpoint contains some interesting files.
 
-![image.png](image%205.png)
+![image.png](/assets/images/thm-undiscovered/image%205.png)
 
 In particular, sql folder contains a file named `mysql.initial.sql` with a suspect final entry.
 
@@ -307,7 +307,7 @@ Hydra (https://github.com/vanhauser-thc/thc-hydra) finished at 2026-11-18 11:45:
 
 After loggin in with the compromised credentials, we are able to use the previously found exploit.
 
-![image.png](image%206.png)
+![image.png](/assets/images/thm-undiscovered/image%206.png)
 
 The exploits says to upload a php webshell using the File Manager function of the CMS, which will then be accessible at `/media/webshell.php`.
 
@@ -509,7 +509,7 @@ script: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked,
 
 Once decompiled, the binary shows that `admin.sh` is called through a `system` function. The most interesting thing, is that an `argv` parameter is passed to `system` through `rsi` register (second parameter passed to the function according to the x64 calling convention).
 
-![image.png](image%207.png)
+![image.png](/assets/images/thm-undiscovered/image%207.png)
 
 So I tried to pass an argument to the script and it prints what reported below.
 
