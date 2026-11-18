@@ -403,7 +403,7 @@ $ cd /mnt/undiscovered
 $ ls
 admin.sh  script  user.txt
 $ cat user.txt
-THM{8d7b7299cccd1796a61915901d0e091c}
+THM{REDACTED}
 $
 ```
 
@@ -784,7 +784,7 @@ root.txt
  | |__| | | | | (_| | \__ \ (_| (_) \ V /  __/ | |  __/ (_| |
   \____/|_| |_|\__,_|_|___/\___\___/ \_/ \___|_|  \___|\__,_|
       
-             THM{8d7b7299cccd1796a61915901d0e091c}
+             THM{REDACTED}
 
 #
 ```
