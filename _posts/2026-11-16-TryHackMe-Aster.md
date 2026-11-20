@@ -12,7 +12,7 @@ Aster is a medium difficulty room available on [TryHackMe](https://tryhackme.com
 
 # Enumeration
 
-Let’s start with a network scan to see which ports are open. I am using `rustscan` because of its easier syntax. 
+I started with a network port scan to see which ports were open with `rustscan`.
 
 ```
 ┌──(giu㉿kali)-[~/Downloads/machine]
@@ -62,11 +62,11 @@ PORT     STATE SERVICE     REASON         VERSION
 
 ## HTTP (80)
 
-There is an open http port, so it makes sense to start the enumeration from there.
+I discovered an open http port, so I started the enumeration from there.
 
 ![image.png](/assets/images/thm-aster/image.png)
 
-After clicking on the download button, a `.pyc` file can be retrieved from server. Using `file` utility, we can see that it is a byte-compiled Python file.
+After clicking on the download button, a `.pyc` file could be retrieved from server. Using `file` utility, I discovered that it was a byte-compiled Python file.
 
 ```
 ┌──(giu㉿kali)-[~/Downloads/machine]
@@ -74,21 +74,21 @@ After clicking on the download button, a `.pyc` file can be retrieved from serve
 output.pyc: python 2.7 byte-compiled
 ```
 
-The most obvious thing we can do, is try to reverse it. With an [online pyc decompiler](https://www.decompiler.com/python), we are able to see the Python source code. 
+With an [online pyc decompiler](https://www.decompiler.com/python), I was are able to reverse the file and see its Python source code. 
 
 ![image.png](/assets/images/thm-aster/image%201.png)
 
-The variable `oO00oOo` contains a suspicious hex string, which once translated reveals an hidden message.
+The variable `oO00oOo` contained a suspicious hex string, which once translated revealed an hidden message.
 
 ![image.png](/assets/images/thm-aster/image%202.png)
 
-The message reveals that user `admin` exists on the “open source framework for building communications”, so it is surely referring to asterisk.
+The message leaked that user `admin` existed on the “open source framework for building communications”, so it was surely referring to asterisk.
 
 ![image.png](/assets/images/thm-aster/image%203.png)
 
 ## Asterisk (5038)
 
-The previous finding is confirmed by trying a basic connection to the 5038 port. Unlucky, there are no available exploits for the Asterisk’s version running on the target server. 
+The previous finding was confirmed by the banner appeard after trying a basic connection on port 5038. Unlucky, there were no available exploits for the reported Asterisk’s version. 
 
 ```
 ┌──(giu㉿kali)-[~/Downloads/machine]
@@ -104,9 +104,7 @@ Shellcodes: No Results
 
 # Exploitation
 
-Because of the `admin` hint found in the previous message, it makes sense to try a password bruteforce on Asterisk.
-
-Using `rockyou.txt` as wordlist, we are able to get a pair of valid credentials. We can now login as user `admin`.
+Because of the `admin` hint found in the previous message, I tried a password bruteforce on the service and finally got a pair of valid credentials. I could now login as user `admin`.
 
 ```
 ┌──(giu㉿kali)-[~/Downloads/machine]
@@ -121,7 +119,7 @@ Hydra (https://github.com/vanhauser-thc/thc-hydra) starting at 2026-11-16 11:36:
 Hydra (https://github.com/vanhauser-thc/thc-hydra) finished at 2026-11-16 11:36:06
 ```
 
-For reference, I am using the following [online guide](https://asteriskrecipes.com/reference/cli-commands/cli-commands-quick-reference) for basic Asterisks commands (make sure to press 2 times enter after each input 🙂).
+For reference, I used an [online guide](https://asteriskrecipes.com/reference/cli-commands/cli-commands-quick-reference) for basic Asterisks commands (made sure to press 2 times enter after each input 🙂).
 
 ```
 ┌──(giu㉿kali)-[~/Downloads/machine]
@@ -141,7 +139,7 @@ LastReload: 2387
 Status: Fully Booted
 ```
 
-Using `sip show users` command we are able to enumerate available users.
+Using `sip show users` command I was able to enumerate all available users.
 
 ```
 action: command
@@ -155,11 +153,11 @@ Output: 101                        101                               test       
 Output: harry                      p4ss#w0rd!#                       test             No   No
 ```
 
-The results show what seems a valid pair of credentials.
+The results showed a pair of credentials.
 
 # Initial Access
 
-Trying to login via ssh as user `harry` with the found password gets us into the machine.
+I tried to login via ssh as user `harry` with the found password and got an initial access into the machine.
 
 ```
 ┌──(giu㉿kali)-[~/Downloads/machine]
@@ -184,9 +182,9 @@ thm{REDACTED}
 
 # PrivEsc
 
-Now that the main user of the target server is compromised, we have to move on for privilege escalation. Let’s start with a basic enumeration.
+Once the main user of the target server is compromised, I had to move on for privilege escalation. I started with a basic enumeration.
 
-`sudo -l`, `SUID`, and `crontab` file are the first things that I always look for.
+`sudo -l`, `SUID`, and `crontab` file were the first things that I looked for.
 
 ```
 harry@ubuntu:~$ sudo -l
@@ -236,9 +234,9 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 #
 ```
 
-In this case, there is a suspicious crontab entry: `cd /root/java/ && bash run.sh` executed as `root` user. This could be a suitable privilege escalation vector.
+Luckily, I found a suspicious crontab entry: `cd /root/java/ && bash run.sh` executed as `root` user. This could surely be a suitable privilege escalation vector.
 
-Remembering that in the user's home directory there was a `.jar` file, I tried to extract it and see what’s inside.
+I remembered the `.jar` file in the user's home directory, so I tried to extract it to see what’s inside.
 
 ```
 ┌──(giu㉿kali)-[~/Downloads/machine]
@@ -260,11 +258,11 @@ Archive:  Example_Root.jar
   inflating: Example_Root.class
 ```
 
-Using again the same online decompiler, we are able to inspect the Java source code.
+Using again the same online decompiler, I was able to inspect the Java source code.
 
 ![image.png](/assets/images/thm-aster/image%204.png)
 
-As we can see, the code checks if file `/tmp/flag.dat` exists, and then writes a secret message in `/home/harry/root.txt`. It is very likely, given the filename `Example_Root.class`, that this code contains the same logic as the `run.sh` script present in the `crontab` file. Let’s try to create the `/tmp/flag.dat` file and see if the script writes the root flag inside `root.txt`.
+The Java code checked if file `/tmp/flag.dat` existed, and then wrote a secret message in `/home/harry/root.txt`. It was very likely, given the filename `Example_Root.class`, that the code shared the same logic with the `run.sh` script present in the `crontab` file. To confirm my theory, I created the `/tmp/flag.dat` file, and after a few seconds the script wrote the root flag inside `root.txt`.
 
 ```
 harry@ubuntu:~$ ls

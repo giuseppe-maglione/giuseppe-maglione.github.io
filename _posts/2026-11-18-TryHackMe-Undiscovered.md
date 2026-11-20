@@ -12,7 +12,7 @@ Undiscovered is a medium room available on [TryHackMe](https://tryhackme.com/roo
 
 # Enumeration
 
-After adding `undiscovered.thm` to `/etc/hosts` file, as suggested from the room introduction, I proceed with a network ports scan.
+After adding `undiscovered.thm` to `/etc/hosts` file, as suggested by the room introduction, I proceed with a network port scan.
 
 ```
 ┌──(giu㉿kali)-[~/Downloads/machine]
@@ -78,15 +78,15 @@ PORT      STATE SERVICE  REASON         VERSION
 
 ```
 
-The most interesting open ports are surely http (80) and nfs (2049).
+The most interesting open ports were surely http (80) and nfs (2049).
 
 ## HTTP (80)
 
-The web server landing page shows what seems an hint message.
+The web server landing page showed what seems an hint message.
 
 ![image.png](/assets/images/thm-undiscovered/image.png)
 
-Trying a directory bruteforce led to nothing, so I tried with a subdomain enumeration.
+I tried a directory bruteforce but it led to nothing, so I continued with a subdomain enumeration.
 
 ```
 ┌──(giu㉿kali)-[~/Downloads/machine]
@@ -163,13 +163,13 @@ resources               [Status: 200, Size: 4626, Words: 385, Lines: 69, Duratio
 :: Progress: [4989/4989] :: Job [1/1] :: 1025 req/sec :: Duration: [0:00:06] :: Errors: 0 ::
 ```
 
-Following the previous message suggestion, I tried to visit the terminal subdomain, which should be “the darker” among the options.
+Following the previous message suggestion, I tried to visit the `terminal` subdomain, which had to be “the darker” among the options.
 
-After adding the subdomain to `/etc/hosts` file, a CMS appears on the landing page.
+After adding the subdomain to `/etc/hosts` file, a CMS appeared on the landing page.
 
 ![image.png](/assets/images/thm-undiscovered/image%201.png)
 
-The CMS version is leaked, so I tried to see if there is any existing exploit for that version.
+The CMS version was leaked, so I tried to see if there was any existing exploit for that version.
 
 ```
 ┌──(giu㉿kali)-[~/Downloads/machine]
@@ -183,11 +183,11 @@ RiteCMS 2.2.1 - Remote Code Execution (Authenticated)                           
 Shellcodes: No Results
 ```
 
-The exploit exists, but authentication is required. The exploit description says that the login page should be situated at `/cms`.
+I found an exploit, but authentication was required. In addition, the exploit description stated that the login page should be situated at `/cms`.
 
 ![image.png](/assets/images/thm-undiscovered/image%202.png)
 
-Unluckly, this subdomain hasn’t any `/cms` endpoint, so my intuition about “the darker path” was wrong. 
+Unluckly, this subdomain hadn’t any `/cms` endpoint, so my intuition about “the darker path” was wrong. 
 
 ![image.png](/assets/images/thm-undiscovered/image%203.png)
 
@@ -217,13 +217,13 @@ To avoid wasting time, I made a small Python script that tests each subdomain qu
 [-] FAILURE: http://start.undiscovered.thm/cms (404)
 ```
 
-So I continued with `deliver` subdomain. The `/cms` endpoint of this subdomain effectively shows a login page.
+I continued with `deliver` subdomain. The `/cms` endpoint of this subdomain effectively showed a login page.
 
 ![image.png](/assets/images/thm-undiscovered/image%204.png)
 
-Unluckily, the default `admin:admin` credentials suggested by the exploit does not work.
+Unluckily, the default `admin:admin` credentials suggested by the exploit did not work.
 
-I tried a directory bruteforce to discover any other hidden endpoint.
+I tried a directory bruteforce to discover if there was any other hidden endpoint.
 
 ```
 ┌──(giu㉿kali)-[~/Downloads/machine]
@@ -264,11 +264,11 @@ templates               [Status: 301, Size: 340, Words: 20, Lines: 10, Duration:
 :: Progress: [4750/4750] :: Job [1/1] :: 1025 req/sec :: Duration: [0:00:07] :: Errors: 0 ::
 ```
 
-The `/data` endpoint contains some interesting files.
+The `/data` endpoint contained some interesting files (spoiler: it was a rabbit hole).
 
 ![image.png](/assets/images/thm-undiscovered/image%205.png)
 
-In particular, sql folder contains a file named `mysql.initial.sql` with a suspect final entry.
+In particular, `sql` folder included a file named `mysql.initial.sql` with a suspect final entry.
 
 ```
 ┌──(giu㉿kali)-[~/Downloads/machine]
@@ -278,7 +278,7 @@ In particular, sql folder contains a file named `mysql.initial.sql` with a suspe
 INSERT INTO phpsqlitecms_userdata VALUES(1, 'admin', 1, '75470d05abd21fb5e84e735d2bc595e2f7ecc5c7a5e98ad0d7', 1230764400, 0);
 ```
 
-The same entry can be also found on `sqlite.user.initial.sql`.
+The same entry could be also found in `sqlite.user.initial.sql`.
 
 ```
 ┌──(giu㉿kali)-[~/Downloads/machine]
@@ -288,7 +288,7 @@ CREATE TABLE rite_userdata (id INTEGER PRIMARY KEY AUTOINCREMENT, name varchar(2
 INSERT INTO rite_userdata VALUES(1, 'admin', 1, '75470d05abd21fb5e84e735d2bc595e2f7ecc5c7a5e98ad0d7', 1230764400, 0);
 ```
 
-I tried to search online which type of hash this was but found nothing. After wasting time on this hash, I decided to try a password bruteforce with username admin.
+I tried to discover which type of hash this was but found nothing. After wasting too much time on it, I decided to try a password bruteforce with username admin.
 
 ```
 ┌──(giu㉿kali)-[~/Downloads/machine]
@@ -309,7 +309,7 @@ After loggin in with the compromised credentials, I was able to use the previous
 
 ![image.png](/assets/images/thm-undiscovered/image%206.png)
 
-The exploits says to upload a php webshell using the File Manager function of the CMS, which will then be accessible at `/media/webshell.php`.
+The exploits guided me into the upload a php webshell using the File Manager function of the CMS, which was then be accessible at `/media/webshell.php`.
 
 ```
 ┌──(giu㉿kali)-[~/Downloads/machine]
@@ -352,11 +352,11 @@ bash: cd: william/: Permission denied
 
 # PrivEsc
 
-The first thing I had to do was an horizontal privilege escalation, because user `www-data` has no privilege on the target machine.
+The first thing I had to do was an horizontal privilege escalation, because user `www-data` had no privilege on the target machine.
 
 ## William
 
-During the enumeration phase, `nmap` reported an nfs open port, so I decided to see if there was some misconfiguration related to the protocol itself.
+During the first enumeration phase, `nmap` reported an nfs open port, so I decided to see if there was some misconfiguration related to the protocol itself.
 
 ```
 www-data@undiscovered:/$ cat /etc/exports
@@ -381,7 +381,7 @@ leonard:x:1002:1002::/home/leonard:/bin/bash
 nfsnobody:x:3004:3005::/home/nfsnobody:
 ```
 
-Unluckily, the `no_root_squash` flag is not set, but we are still able to mount the `/home/william` directory. First of all, I created a fake `william` user with uid 3003 on my local Kali machine, then I mounted the remote file system.
+Unluckily, the `no_root_squash` flag was not set, but I was still able to mount the `/home/william` directory. First of all, I created a fake `william` user with uid 3003 on my local Kali machine, then I mounted the remote file system.
 
 ```
 ┌──(giu㉿kali)-[~/Downloads/machine]
@@ -453,7 +453,7 @@ william@undiscovered:~$
 
 ## Leonard
 
-Inside `william` home directory, there are two interesting files.
+Inside `william` home directory, there were two interesting files.
 
 ```
 william@undiscovered:~$ ls -la
@@ -482,7 +482,7 @@ william@undiscovered:~$ ./script
 william@undiscovered:~$
 ```
 
-As reported above, `script` binary executes commands from `admin.sh`. In addition, `script` has SUID set as user `leonard`, so every command launched by `script` is executed as `leonard`. Unluckily, `william` do not have any write permission on `admin.sh`, so I cannot change its content. I started a more detailed analysis about the file by transfering it on my local machine.
+As reported above, `script` binary executed commands from `admin.sh`. In addition, `script` had SUID set as user `leonard`, so every command launched by `script` was executed as `leonard`. Unluckily, `william` did not have any write permission on `admin.sh`, so I could not change its content. I started a more detailed analysis about the file by transfering it on my local machine.
 
 ```
 ┌──(giu㉿kali)-[~/Downloads/machine]
@@ -507,18 +507,18 @@ script: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked,
     Stripped:   No                                                                                                                                                               
 ```
 
-Once decompiled, the binary shows that `admin.sh` is called through a `system` function. The most interesting thing, is that an `argv` parameter is passed to `system` through `rsi` register (second parameter passed to the function according to the x64 calling convention).
+Once decompiled, the binary showed that `admin.sh` was called through a `system` function. The most interesting thing, was that an `argv` parameter was passed to `system` through `rsi` register (second parameter passed to the function according to the x64 calling convention).
 
 ![image.png](/assets/images/thm-undiscovered/image%207.png)
 
-So I tried to pass an argument to the script and it prints out the following result.
+So I tried to pass an argument to the script and it printed out the following result.
 
 ```
 william@undiscovered:~$ ./script AA
 /bin/cat: /home/leonard/AA: No such file or directory
 ```
 
-The script is executing a `cat` command on a file path composed by the argument we are passing as input. This means that the script could be vulnerable to a path traversal attack. 
+The script was executing a `cat` command on a file path composed by the argument I was passing as input. This means that the script could be vulnerable to a path traversal attack. 
 
 I tried to see if there is any ssh in the `leonard` home directory.
 
@@ -633,7 +633,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 leonard@undiscovered:~$
 ```
 
-Enumerating the capabilities, I found an entry for `vim.basic`. In addition, inside the `leonard` home directory there is a suspicious `.viminfo` file.
+During the capabilities enumeration, I found an entry for `vim.basic`. In addition, inside the `leonard` home directory there was a suspicious `.viminfo` file.
 
 ```
 leonard@undiscovered:~$ getcap -r / 2>/dev/null

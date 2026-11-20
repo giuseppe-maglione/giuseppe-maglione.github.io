@@ -12,7 +12,7 @@ VulnNet is a medium room available on [TryHackMe](https://tryhackme.com/room/vul
 
 # Enumeration
 
-After adding `vulnnet.thm` to `/etc/hosts` file, as suggested from the room introduction, I proceeded with a network ports scan using `rustscan`.
+After adding `vulnnet.thm` to `/etc/hosts` file, as suggested from by room introduction, I proceeded with a network port scan using `rustscan`.
 
 ```
 ┌──(giu㉿kali)-[~/Downloads/machine]
@@ -139,13 +139,13 @@ broadcast               [Status: 401, Size: 468, Words: 42, Lines: 15, Duration:
 
 Again, default credentials like `admin:admin` and `admin:password` did not work. 
 
-I decided to inspect the javascript files found in the `/js` endpoint, because of their suspicious names.
+I decided to inspect the JavaScript files found in the `/js` endpoint, because of their suspicious names.
 
 ![image.png](/assets/images/thm-vulnnet/image%203.png)
 
 ![image.png](/assets/images/thm-vulnnet/image%204.png)
 
-I used a JavaScript [online beautifier](https://beautifier.io/) to read the code more easily. On the first file, I found a reference to `broadcast` subdomain (already discovered during previous subdomain enumeration), while on the second one I found an interesting `?referer=` argument passed to `index.php`. I tested for command execution and LFI, the second option worked.
+I used an [online code beautifier](https://beautifier.io/) to read the code more easily. On the first file, I found a reference to `broadcast` subdomain (already discovered during previous subdomain enumeration), while on the second one I found an interesting `?referer=` argument passed to `index.php`. I tested for command execution and LFI, the second option worked.
 
 ![image.png](/assets/images/thm-vulnnet/image%205.png)
 
@@ -198,7 +198,7 @@ sshd:x:113:65534::/run/sshd:/usr/sbin/nologin
 </html>
 ```
 
-The /etc/passwd file revealed a `server-management` user (uid 1000). I tried to bruteforce passwords for this user on both `broadcast` and `/login.html`, but did not work, so I continued fuzzing with the `referer` parameter to discover some other interesting file.
+The `/etc/passwd` file revealed a `server-management` user (uid 1000). I tried to bruteforce passwords for this user on both `broadcast` and `/login.html`, but did not work, so I continued fuzzing with the `referer` parameter to discover some other interesting file.
 
 ```
 ┌──(giu㉿kali)-[~/Downloads/machine]
@@ -233,7 +233,7 @@ LICENSE.txt             [Status: 200, Size: 6938, Words: 1896, Lines: 167, Durat
 
 I tried to inspect `index.php` directly from `referer` parameter, but this crashed the Firefox window because of an infinite page loading loop. I inspected the code directly from `/var/www/html` (default Apache2 web directory) but found nothing interesting, so I continue with bruteforce, this time with a specific Linux LFI wordlist.
 
-```bash
+```
 ┌──(giu㉿kali)-[~/Downloads/machine]
 └─$ ffuf -u "http://vulnnet.thm/index.php?referer=FUZZ" -w /usr/share/seclists/Fuzzing/LFI/LFI-gracefulsecurity-linux.txt -fs 5829
 
@@ -482,7 +482,7 @@ www-data
 
 From `crontab` file, I discovered an interesting `backupsrv.sh` script executed as `root` every 2 minutes.
 
-The crontab PATH variable starts the search from `/usr/local/sbin`, so we cannot abuse the variable.
+The crontab `PATH` variable starts the search from `/usr/local/sbin`, so we cannot abuse it.
 
 ```
 www-data@vulnnet:/var/www/html$ cat /etc/crontab
@@ -541,7 +541,7 @@ date
 ls -lh $dest
 ```
 
-In the /var/backups there were already backed up files, so I tried to unzip them and discovered an `id_rsa` with read permission.
+In the `/var/backups` there were already backed up files, so I tried to unzip them and discovered an `id_rsa` with read permission.
 
 ```
 www-data@vulnnet:/var/www/html$ cd /var/backups/
@@ -709,7 +709,7 @@ In particular, we can abuse the `tar` checkpoint functionality to execute a bina
 
 ![image.png](/assets/images/thm-vulnnet/image%2010.png)
 
-The idea I had was to create a binary that adds SUID to `/bin/bash`. Because `tar` command ran from backup script, which was executed as `root`, the SUID was added as `root`. 
+The idea I had was to create a binary that adds SUID to `/bin/bash`. Because `tar` command ran from backup script, which was executed as `root`, the SUID would be added as `root`. 
 
 ```
 server-management@vulnnet:~/Documents$ echo '#!/bin/bash' > shell

