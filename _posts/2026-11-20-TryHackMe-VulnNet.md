@@ -8,7 +8,7 @@ tags: [lfi, subdomain, cve, script_analysis, wildcard, crontab]
 
 # VulnNet (Medium) - TryHackMe Walkthrough
 
-Undiscovered is a medium room available on [TryHackMe](https://tryhackme.com/room/vulnnet1). The machine requires a basic understanding of LFI, subdomain enumeration, CVE, script analysis, Linux crontab, and wildcard abuse.
+VulnNet is a medium room available on [TryHackMe](https://tryhackme.com/room/vulnnet1). The machine requires a basic understanding of LFI, subdomain enumeration, CVE, script analysis, Linux crontab, and wildcard abuse.
 
 # Enumeration
 
