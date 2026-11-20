@@ -139,7 +139,7 @@ broadcast               [Status: 401, Size: 468, Words: 42, Lines: 15, Duration:
 
 Again, default credentials like `admin:admin` and `admin:password` did not work. 
 
-I decided to inspect the javascript files found in the `/js` endpoint, because of their suspicious names.  
+I decided to inspect the javascript files found in the `/js` endpoint, because of their suspicious names.
 
 ![image.png](/assets/images/thm-vulnnet/image%203.png)
 
