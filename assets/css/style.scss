@@ -62,7 +62,7 @@ ul {
 }
 
 ul li {
-  list-style-image: none !important; // disattiva il bullet.png verde del tema
+  list-style-image: none !important;
   position: relative;
   padding-left: 1.6em;
   margin-bottom: 6px;
@@ -75,4 +75,24 @@ ul li::before {
   color: #ff2a2a !important;
   font-weight: bold;
   font-family: monospace;
+}
+
+/* code blocks */
+pre {
+  padding: 12px 15px !important;
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+  overflow-x: auto; 
+}
+
+pre code {
+  font-size: 13px !important;
+  padding: 0 !important;
+  border: none !important;
+  background: transparent !important;
+}
+
+p code, li code {
+  font-size: 13px !important;
+  padding: 2px 5px !important;
 }

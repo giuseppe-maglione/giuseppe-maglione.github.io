@@ -10,7 +10,7 @@ permalink: /posts/
 
 ---
 
-## 🎯 CTF Writeups
+## CTF Writeups 🎯
 <ul>
   {% for post in site.categories.CTF %}
     <li>
@@ -19,7 +19,7 @@ permalink: /posts/
   {% endfor %}
 </ul>
 
-## 🛡️ CVE Disclosures
+## CVE Disclosures 🛡️
 <ul>
   {% for post in site.categories.CVE %}
     <li>
@@ -28,7 +28,7 @@ permalink: /posts/
   {% endfor %}
 </ul>
 
-## 💀 Exploits & Research
+## Exploits & Research 💀
 <ul>
   {% for post in site.categories.Exploits %}
     <li>
