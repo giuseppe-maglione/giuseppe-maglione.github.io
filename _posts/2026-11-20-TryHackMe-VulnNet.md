@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "TryHackMe: VulnNet Writeup"
-date: 2026-11-20 12:00:00 +0100
+date: 2026-11-20 10:00:00 +0100
 categories: [CTF, TryHackMe]
 tags: [lfi, subdomain, cve, script_analysis, wildcard, crontab]
 ---
