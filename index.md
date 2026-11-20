@@ -16,12 +16,16 @@ Welcome. I am an Offensive Security researcher. This space is dedicated to docum
 
 ### Recent Publications 📝
 <ul>
-  {% for post in site.posts %}
+  {% for post in site.posts limit:5 %}
     <li>
       <a href="{{ post.url }}">{{ post.title }}</a> - {{ post.date | date: "%Y-%m-%d" }}
     </li>
   {% endfor %}
 </ul>
+
+<div style="margin-top: 20px;">
+  <a href="/posts/" class="social-btn">View All Posts &rarr;</a>
+</div>
 
 ---
 
